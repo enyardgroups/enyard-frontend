@@ -49,15 +49,30 @@ export function useApiRequest<T = unknown>() {
 				setData(result.data);
 				return result.data;
 			} catch (err) {
-				const errorMessage =
-					err instanceof AxiosError
-						? err.response?.data?.message || err.message
-						: err instanceof Error
-						? err.message
-						: "An error occurred";
+				let errorMessage = "An error occurred";
+				
+				if (err instanceof AxiosError) {
+					// Axios error - extract message from response
+					if (err.response?.data) {
+						errorMessage = err.response.data.message || 
+						              err.response.data.error || 
+						              err.message;
+					} else {
+						errorMessage = err.message;
+					}
+				} else if (err instanceof Error) {
+					errorMessage = err.message;
+				} else if (typeof err === 'object' && err !== null) {
+					// Check for common error formats
+					errorMessage = (err as any).message || (err as any).error || "An error occurred";
+				}
 
 				setError(errorMessage);
-				throw err;
+				// Attach the error message to the error object for easier access
+				const enhancedError = err instanceof Error ? err : new Error(errorMessage);
+				(enhancedError as any).message = errorMessage;
+				(enhancedError as any).response = err instanceof AxiosError ? err.response : undefined;
+				throw enhancedError;
 			} finally {
 				setLoading(false);
 			}

@@ -1,6 +1,6 @@
 // API Configuration
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3011";
 const API_VERSION = "/api";
 
 interface CustomRequestConfig {
@@ -80,7 +80,7 @@ export class ApiClient {
         }
         const error = new Error(errorMessage);
         (error as any).status = response.status;
-        (error as any).response = response;
+        (error as any).response = { data: errorData, status: response.status };
         throw error;
       }
 

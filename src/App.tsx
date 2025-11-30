@@ -43,7 +43,8 @@ const App = () => {
 
 	useEffect(() => {
 		checkAuth();
-	}, [checkAuth]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	return (
 		<QueryClientProvider client={queryClient}>

@@ -13,17 +13,18 @@ import { PAGE_PATHS } from "@/seo/routeMeta";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
-import useAuth from "@/hooks/useAuth";
-import { getIdToken } from "@/firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 import useApiRequest from "@/hooks/useApiRequest";
+import Recaptcha from "@/components/Recaptcha";
 
 const PhoneNumber = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 	const [countryCode, setCountryCode] = useState("+91");
 	const [phoneNumber, setPhoneNumber] = useState("");
+	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const { post } = useApiRequest();
+	const { toast } = useToast();
 
 	const buildFullPhoneNumber = () => {
 		const sanitized = phoneNumber.replace(/\D/g, "");
@@ -52,23 +53,18 @@ const PhoneNumber = () => {
 		}
 
 		try {
-			// 2. Retrieve Firebase ID token
-			let idToken: string | null = null;
-			try {
-				idToken = await getIdToken();
-			} catch (tokenErr) {
-				console.warn("Failed to get ID token:", tokenErr);
-			}
+			// Get auth token from localStorage (set after email verification)
+			const token = localStorage.getItem("auth_token");
 
-			// 3. Build headers
-			const headers = idToken
-				? { Authorization: `Bearer ${idToken}` }
+			// Build headers
+			const headers = token
+				? { Authorization: `Bearer ${token}` }
 				: undefined;
 
-			// 4. Make backend POST call using your helper
-			const payload = await post(
-				"/api/sms/request-otp",
-				{ phone },
+			// Make backend POST call
+			await post(
+				"/sms/request-otp",
+				{ phone, recaptchaToken },
 				{ headers }
 			);
 
@@ -90,11 +86,16 @@ const PhoneNumber = () => {
 		}
 	};
 
-	const { checkEmailVerified } = useAuth();
 	useEffect(() => {
-		const verified = checkEmailVerified();
-		if (verified) {
-			toast({ title: "Your Email has been verified successfully!!" });
+		// Check if user has a token (from email verification)
+		const token = localStorage.getItem("auth_token");
+		if (!token) {
+			toast({
+				variant: "destructive",
+				title: "Email Not Verified",
+				description: "Please verify your email first",
+			});
+			navigate("/auth/verify-email");
 		}
 	}, []);
 
@@ -153,7 +154,20 @@ const PhoneNumber = () => {
 										</div>
 									</div>
 
-									<Button className="w-full" type="submit" disabled={isLoading}>
+									<Recaptcha
+										version="v3"
+										action="phone_verification"
+										onVerify={(token) => setRecaptchaToken(token)}
+										onError={(error) => {
+											toast({
+												variant: "destructive",
+												title: "reCAPTCHA Error",
+												description: error,
+											});
+										}}
+									/>
+
+									<Button className="w-full" type="submit" disabled={isLoading || !recaptchaToken}>
 										{isLoading ? (
 											<Loader2 className="h-4 w-4 animate-spin" />
 										) : (

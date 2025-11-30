@@ -13,12 +13,96 @@ import { SeoMeta } from "@/components/SeoMeta";
 const About = () => {
 	const [scrollY, setScrollY] = useState(0);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [typedCode, setTypedCode] = useState("");
+
+	const fullCode = `class ENYARDInnovation {
+  constructor() {
+    this.philosophy = 'Innovation-First';
+    this.approach = 'Research-Driven';
+    this.execution = 'Practical-Implementation';
+  }
+
+  async createFuture() {
+    const research = await this.deepAnalysis();
+    const innovation = this.breakthrough(research);
+    return this.implement(innovation);
+  }
+}
+
+// Building tomorrow, today
+const enyard = new ENYARDInnovation();
+enyard.createFuture();`;
+
+	// Helper function to render code with syntax highlighting
+	const renderCodeLine = (line: string, lineNum: number) => {
+		const parts: JSX.Element[] = [];
+		let currentIndex = 0;
+		
+		// Match keywords
+		const keywords = ['class', 'constructor', 'async', 'await', 'const', 'return', 'new'];
+		const classNames = ['ENYARDInnovation', 'createFuture'];
+		const properties = ['philosophy', 'approach', 'execution', 'research', 'innovation', 'deepAnalysis', 'breakthrough', 'implement', 'enyard'];
+		
+		// Check for comment
+		if (line.trim().startsWith('//')) {
+			return (
+				<div key={lineNum} className="flex">
+					<span className="text-gray-600 mr-4 w-8">{lineNum}</span>
+					<span className="text-gray-400">//</span>{" "}
+					<span className="text-green-400">{line.replace('//', '').trim()}</span>
+				</div>
+			);
+		}
+		
+		// Simple tokenization
+		const tokens = line.match(/(\w+|[{}();=.'\s]+)/g) || [];
+		
+		return (
+			<div key={lineNum} className="flex">
+				<span className="text-gray-600 mr-4 w-8">{lineNum}</span>
+				<span>
+					{tokens.map((token, idx) => {
+						if (keywords.includes(token.trim())) {
+							return <span key={idx} className="text-purple-400">{token}</span>;
+						}
+						if (classNames.includes(token.trim())) {
+							return <span key={idx} className="text-yellow-400">{token}</span>;
+						}
+						if (properties.includes(token.trim())) {
+							return <span key={idx} className="text-green-400">{token}</span>;
+						}
+						if (token.includes("'") && token.match(/'[^']*'/)) {
+							return <span key={idx} className="text-orange-400">{token}</span>;
+						}
+						if (['{', '}', '(', ')', '=', ';', '.', ' '].some(c => token.includes(c))) {
+							return <span key={idx} className="text-gray-400">{token}</span>;
+						}
+						return <span key={idx} className="text-gray-300">{token}</span>;
+					})}
+				</span>
+			</div>
+		);
+	};
 
 	useEffect(() => {
 		const handleScroll = () => setScrollY(window.scrollY);
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
+
+	useEffect(() => {
+		let currentIndex = 0;
+		const typingInterval = setInterval(() => {
+			if (currentIndex < fullCode.length) {
+				setTypedCode(fullCode.slice(0, currentIndex + 1));
+				currentIndex++;
+			} else {
+				clearInterval(typingInterval);
+			}
+		}, 30); // Adjust speed here (lower = faster)
+
+		return () => clearInterval(typingInterval);
+	}, [fullCode]);
 
 	// // SEO Meta Tags
 	// useEffect(() => {
@@ -270,6 +354,13 @@ const About = () => {
 			logo: Brands.ricspace,
 			color: "from-cyan-200 to-blue-100",
 		},
+		{
+			name: "Secure Worldz",
+			category: "Cyber Security Provider",
+			description: "Advanced cybersecurity solutions and protection",
+			logo: Brands.secureworldz,
+			color: "from-slate-600 to-gray-800",
+		},
 	];
 
 	const team = [
@@ -283,24 +374,17 @@ const About = () => {
 		},
 		{
 			name: "Shabin",
-			position: "Director & CEO",
+			position: "Chief Executive Officer",
 			description: "Executive leadership and business development",
 			profile: Leaders.shabin,
 			linkedin: "https://www.linkedin.com/in/shabin-jezh",
 		},
 		{
 			name: "Jibisha",
-			position: "Operational Manager",
-			description: "Day-to-day operations and team management",
+			position: "Chief Operating Officer",
+			description: "Executive leadership and business development",
 			profile: Leaders.jibisha,
 			linkedin: "https://www.linkedin.com/in/jibisha-xavier-825689273/",
-		},
-		{
-			name: "Arshitha",
-			position: "Operational Manager",
-			description: "Day-to-day operations and team management",
-			profile: Leaders.arshitha,
-			linkedin: "https://www.linkedin.com/in/arshithams/",
 		},
 	];
 
@@ -643,127 +727,51 @@ const About = () => {
 										<hr className="border-gray-700" />
 										{/* Code Content */}
 										<div className="font-mono p-4 text-sm text-gray-300 space-y-2 h-80 overflow-auto">
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">1</span>
-												<span className="text-blue-400">class</span>{" "}
-												<span className="text-yellow-400">
-													ENYARDInnovation
-												</span>{" "}
-												<span className="text-gray-400">&#123;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">2</span>
-												<span className="text-purple-400">constructor</span>
-												<span className="text-gray-400">() &#123;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">3</span>
-												<span className="text-gray-400 ml-4">this.</span>
-												<span className="text-green-400">philosophy</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-orange-400">
-													'Innovation-First'
-												</span>
-												<span className="text-gray-400">;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">4</span>
-												<span className="text-gray-400 ml-4">this.</span>
-												<span className="text-green-400">approach</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-orange-400">
-													'Research-Driven'
-												</span>
-												<span className="text-gray-400">;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">5</span>
-												<span className="text-gray-400 ml-4">this.</span>
-												<span className="text-green-400">execution</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-orange-400">
-													'Practical-Implementation'
-												</span>
-												<span className="text-gray-400">;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">6</span>
-												<span className="text-gray-400">&#125;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">7</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">8</span>
-												<span className="text-purple-400">async</span>{" "}
-												<span className="text-yellow-400">createFuture</span>
-												<span className="text-gray-400">() &#123;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">9</span>
-												<span className="text-gray-400 ml-4">const</span>{" "}
-												<span className="text-green-400">research</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-purple-400">await</span>{" "}
-												<span className="text-yellow-400">this.</span>
-												<span className="text-green-400">deepAnalysis</span>
-												<span className="text-gray-400">();</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">10</span>
-												<span className="text-gray-400 ml-4">const</span>{" "}
-												<span className="text-green-400">innovation</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-yellow-400">this.</span>
-												<span className="text-green-400">breakthrough</span>
-												<span className="text-gray-400">(</span>
-												<span className="text-green-400">research</span>
-												<span className="text-gray-400">);</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">11</span>
-												<span className="text-gray-400 ml-4">return</span>{" "}
-												<span className="text-yellow-400">this.</span>
-												<span className="text-green-400">implement</span>
-												<span className="text-gray-400">(</span>
-												<span className="text-green-400">innovation</span>
-												<span className="text-gray-400">);</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">12</span>
-												<span className="text-gray-400">&#125;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">13</span>
-												<span className="text-gray-400">&#125;</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">14</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">15</span>
-												<span className="text-gray-400">//</span>{" "}
-												<span className="text-green-400">
-													Building tomorrow, today
-												</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">16</span>
-												<span className="text-gray-400">const</span>{" "}
-												<span className="text-green-400">enyard</span>{" "}
-												<span className="text-gray-400">=</span>{" "}
-												<span className="text-purple-400">new</span>{" "}
-												<span className="text-yellow-400">
-													ENYARDInnovation
-												</span>
-												<span className="text-gray-400">();</span>
-											</div>
-											<div className="flex">
-												<span className="text-gray-600 mr-4 w-8">17</span>
-												<span className="text-yellow-400">enyard.</span>
-												<span className="text-green-400">createFuture</span>
-												<span className="text-gray-400">();</span>
-											</div>
+											{fullCode.split('\n').map((line, lineIndex) => {
+												const linesBefore = fullCode.split('\n').slice(0, lineIndex).join('\n').length + lineIndex;
+												const lineStart = linesBefore;
+												const lineEnd = lineStart + line.length + 1; // +1 for newline
+												const isLineComplete = typedCode.length >= lineEnd;
+												const visibleChars = Math.max(0, typedCode.length - lineStart);
+												const visibleLine = isLineComplete ? line : line.substring(0, Math.min(visibleChars, line.length));
+												
+												if (visibleLine.length === 0 && !isLineComplete) return null;
+												
+												return (
+													<div key={lineIndex} className="flex">
+														<span className="text-gray-600 mr-4 w-8">{lineIndex + 1}</span>
+														<span>
+															{visibleLine.split(/(\w+|[{}();=.'\s]+)/g).map((token, tokenIdx) => {
+																if (!token) return null;
+																const trimmed = token.trim();
+																
+																if (['class', 'constructor', 'async', 'await', 'const', 'return', 'new'].includes(trimmed)) {
+																	return <span key={tokenIdx} className="text-purple-400">{token}</span>;
+																}
+																if (['ENYARDInnovation', 'createFuture'].includes(trimmed)) {
+																	return <span key={tokenIdx} className="text-yellow-400">{token}</span>;
+																}
+																if (['philosophy', 'approach', 'execution', 'research', 'innovation', 'deepAnalysis', 'breakthrough', 'implement', 'enyard'].includes(trimmed)) {
+																	return <span key={tokenIdx} className="text-green-400">{token}</span>;
+																}
+																if (token.match(/'[^']*'/)) {
+																	return <span key={tokenIdx} className="text-orange-400">{token}</span>;
+																}
+																if (line.trim().startsWith('//')) {
+																	return <span key={tokenIdx} className="text-green-400">{token}</span>;
+																}
+																if (['{', '}', '(', ')', '=', ';', '.'].some(c => token.includes(c))) {
+																	return <span key={tokenIdx} className="text-gray-400">{token}</span>;
+																}
+																return <span key={tokenIdx} className="text-gray-300">{token}</span>;
+															})}
+														</span>
+													</div>
+												);
+											})}
+											{typedCode.length < fullCode.length && (
+												<span className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1"></span>
+											)}
 										</div>
 
 										{/* Animated Cursor */}
@@ -901,7 +909,11 @@ const About = () => {
 										className={`absolute inset-0 bg-gradient-to-br ${brand.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
 									/>
 									<div className="flex flex-col items-center justify-center text-center">
-										<img src={brand.logo} alt={brand.name + " logo"} />
+										<img 
+											src={brand.logo} 
+											alt={brand.name + " logo"} 
+											className="max-w-[120px] max-h-[80px] object-contain mb-4"
+										/>
 
 										<h3 className="text-lg font-bold mb-2 text-black group-hover:text-gray-800 transition-colors">
 											{brand.name}
@@ -951,8 +963,8 @@ const About = () => {
 							</p>
 						</div>
 
-						<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-							{team.map((member, index) => (
+					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+						{team.map((member, index) => (
 								<Card
 									key={index}
 									className="p-6 magnetic-card glass relative overflow-hidden group hover:shadow-lg transition-all duration-300">
@@ -968,7 +980,9 @@ const About = () => {
 										<img
 											src={member.profile}
 											alt={member.name}
-											className="w-[150px] h-[150px] object-cover rounded-full mx-auto mb-4 shadow-md border border-gray-200"
+											className={`w-[150px] h-[150px] object-cover rounded-full mx-auto mb-4 shadow-md border border-gray-200 ${
+												member.name === "Jibisha" ? "object-top" : ""
+											}`}
 										/>
 
 										<h3 className="text-xl font-bold mb-2 text-black">

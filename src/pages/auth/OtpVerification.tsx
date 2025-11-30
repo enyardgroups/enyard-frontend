@@ -15,7 +15,6 @@ import { PAGE_PATHS } from "@/seo/routeMeta";
 import { Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getIdToken } from "@/firebase/auth";
 
 const OtpVerification = () => {
 	const navigate = useNavigate();
@@ -52,56 +51,71 @@ const OtpVerification = () => {
 
 		const fullOtp = otp.join("");
 		if (fullOtp.length !== 6) {
-			alert("Enter complete 6-digit OTP.");
+			toast({
+				title: "Invalid OTP",
+				description: "Please enter complete 6-digit OTP.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		if (!phone) {
+			toast({
+				title: "Error",
+				description: "Phone number not found. Please try again.",
+				variant: "destructive",
+			});
+			navigate("/auth/login");
 			return;
 		}
 
 		setIsLoading(true);
 		try {
-			// 2. Retrieve Firebase ID token
-			let idToken: string | null = null;
-			try {
-				idToken = await getIdToken();
-			} catch (tokenErr) {
-				console.warn("Failed to get ID token:", tokenErr);
+			// Check if this is for registration (has auth token) or login
+			const token = localStorage.getItem("auth_token");
+			let response;
+
+			if (token) {
+				// Registration flow - verify phone after email verification
+				response = await post(
+					"/sms/verify-otp",
+					{ phone, otp: fullOtp },
+					{ headers: { Authorization: `Bearer ${token}` } }
+				);
+			} else {
+				// Login flow - passwordless login
+				response = await post("/auth/passwordless/verify-otp", {
+					phone,
+					otp: fullOtp,
+				});
 			}
 
-			// 3. Build headers
-			const headers = idToken
-				? { Authorization: `Bearer ${idToken}` }
-				: undefined;
+			if (response.success) {
+				// If token is returned, store it and set user
+				if (response.data.token) {
+					localStorage.setItem("auth_token", response.data.token);
+					const { useAuthStore } = await import("@/store/authStore");
+					const { setUser, setToken } = useAuthStore.getState();
+					setToken(response.data.token);
+					setUser(response.data.user);
+				}
 
-			// 4. Make backend POST call using your helper
-			const payload = await post(
-				"/api/sms/verify-otp",
-				{ phone, otp: fullOtp },
-				{ headers }
-			);
-
-			toast({
-				title: "Phone number verified successfully",
-				description: "try to logged in.",
-			});
-			localStorage.setItem("penguinX", "Registered");
-			navigate("");
-
-			// 6. Navigate to OTP validation
+				toast({
+					title: "Verification Successful",
+					description: response.message || "You have been logged in.",
+				});
+				localStorage.removeItem("phone");
+				navigate("/");
+			}
 		} catch (err: any) {
 			toast({
-				title: "invalid OTP",
-				description: "try again",
+				title: "Invalid OTP",
+				description: err.message || "Please try again",
 				variant: "destructive",
 			});
-			return;
 		} finally {
 			setIsLoading(false);
 		}
-
-		// Simulate OTP verification success
-		setTimeout(() => {
-			setIsLoading(false);
-			navigate("/"); // or wherever you want to redirect
-		}, 1500);
 	};
 
 	return (

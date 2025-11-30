@@ -76,24 +76,31 @@ const InfiniteLogoScroll = () => {
 				duration={25}
 				pauseOnHover={false}
 				blurBorders={false}>
-				{clients.map((logo, index) => (
-					<Slider.Slide key={index}>
-						<div className="group relative">
-							<div className="flex items-center justify-center px-8 transition-transform duration-500 group-hover:scale-110">
-								<img
-									src={logo.src}
-									alt={logo.alt}
-									className="
+				{clients.map((logo, index) => {
+					// Make fcfleet and chicago logos bigger
+					const isLargeLogo = logo.alt.toLowerCase().includes("fleet") || logo.alt.toLowerCase().includes("chicago");
+					return (
+						<Slider.Slide key={index}>
+							<div className="group relative">
+								<div className="flex items-center justify-center px-8 transition-transform duration-500 group-hover:scale-110">
+									<img
+										src={logo.src}
+										alt={logo.alt}
+										className={`
+									
               object-contain
               transition-all duration-500
               grayscale
               group-hover:grayscale-0
             "
-								/>
+								 ${isLargeLogo ? "scale-150" : ""}
+            `}
+									/>
+								</div>
 							</div>
-						</div>
-					</Slider.Slide>
-				))}
+						</Slider.Slide>
+					);
+				})}
 			</Slider>
 		</div>
 	);

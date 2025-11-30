@@ -9,16 +9,16 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Clock,
-  Building2,
-  Truck,
   Shield,
-  Heart,
   ArrowRight,
   Star,
   Zap,
   Users,
   TrendingUp,
+  MonitorCog,
+  GitGraph,
   Terminal,
+  BookOpen,
 } from "lucide-react";
 import BusinessForm from "./BusinessForm";
 import { useNavigate } from "react-router-dom";
@@ -72,42 +72,6 @@ const ProductsGrid = () => {
 			href: "/products/timex",
 		},
 		{
-			name: "CoreX",
-			description:
-				"The ERP that grows with your business. Watch as it learns your processes, anticipates your needs, and automates complex workflows. From startup to enterprise, it's the only system you'll ever need.",
-			icon: Building2,
-			features: [
-				"Intelligent Process Automation",
-				"Real-time Business Insights",
-				"Smart Workflow Management",
-				"Predictive Planning",
-			],
-			stats: { users: "100k+", efficiency: "75%", growth: "200%" },
-			color: "from-green-500 to-emerald-500",
-			accentColor: "green-500",
-			gradient: "from-green-500/20 via-emerald-500/20 to-green-600/20",
-			badge: "Enterprise Ready",
-			href: "/products/corex",
-		},
-		{
-			name: "FleetX",
-			description:
-				"Fleet management that thinks ahead. Optimize routes in real-time, predict maintenance needs, and slash costs with intelligent systems that learn from every journey and improve continuously.",
-			icon: Truck,
-			features: [
-				"Real-time Route Optimization",
-				"Predictive Maintenance",
-				"Cost Intelligence",
-				"Live Fleet Tracking",
-			],
-			stats: { vehicles: "25k+", savings: "30%", uptime: "98%" },
-			color: "from-orange-500 to-amber-500",
-			accentColor: "orange-500",
-			gradient: "from-orange-500/20 via-amber-500/20 to-orange-600/20",
-			badge: "Smart Fleet",
-			href: "/products/fleetx",
-		},
-		{
 			name: "XSafety",
 			description:
 				"Advanced safety management system for airlines with AI-enabled features. Monitor incidents, hazards, conduct comprehensive auditing, and implement corrective actions with intelligent systems that ensure aviation safety compliance.",
@@ -126,27 +90,45 @@ const ProductsGrid = () => {
 			href: "/products/xsafety",
 		},
 		{
-			name: "MedzorX",
+			name: "WorkX365",
 			description:
-				"Healthcare management that saves lives. From intelligent diagnostics to automated patient care, our platform helps medical professionals focus on what matters most—delivering exceptional care.",
-			icon: Heart,
+				"Simplified workforce management and productivity tracking. Streamline your team's operations with intelligent scheduling, time tracking, and performance analytics that help you make data-driven decisions.",
+			icon: MonitorCog,
 			features: [
-				"Intelligent Medical Diagnostics",
-				"Patient Care Analytics",
-				"Smart Appointment Management",
-				"Compliance Automation",
+				"Workforce Management",
+				"Productivity Tracking",
+				"Intelligent Scheduling",
+				"Performance Analytics",
 			],
-			stats: { hospitals: "200+", patients: "1M+", efficiency: "60%" },
-			color: "from-red-500 to-rose-500",
-			accentColor: "red-500",
-			gradient: "from-red-500/20 via-rose-500/20 to-red-600/20",
-			badge: "Life Saving",
-			href: "/products/medzorx",
+			stats: { teams: "10k+", efficiency: "65%", growth: "150%" },
+			color: "from-indigo-500 to-blue-500",
+			accentColor: "indigo-500",
+			gradient: "from-indigo-500/20 via-blue-500/20 to-indigo-600/20",
+			badge: "Productivity",
+			href: "/products/workx365",
 		},
 		{
-			name: "PENQUIN",
+			name: "GitX",
 			description:
-				"A comprehensive platform for cybersecurity enthusiasts to learn about various tools and multi-vulnerability exploitation in a single, interactive environment. Launching soon!",
+				"Seamless GitHub-to-server deployment without CI/CD. Deploy your code directly from GitHub to your servers with zero configuration. Simplify your deployment workflow and focus on building great software.",
+			icon: GitGraph,
+			features: [
+				"Direct GitHub Integration",
+				"Zero Configuration Deployment",
+				"Automated Workflows",
+				"Server Management",
+			],
+			stats: { deployments: "100k+", speed: "90%", uptime: "99.9%" },
+			color: "from-green-500 to-emerald-500",
+			accentColor: "green-500",
+			gradient: "from-green-500/20 via-emerald-500/20 to-green-600/20",
+			badge: "DevOps",
+			href: "/products/gitx",
+		},
+		{
+			name: "PenquinX",
+			description:
+				"A comprehensive platform for cybersecurity enthusiasts to learn about various tools and multi-vulnerability exploitation in a single, interactive environment. Master cybersecurity skills through hands-on labs and real-world scenarios.",
 			icon: Terminal,
 			features: [
 				"Interactive Labs",
@@ -154,12 +136,30 @@ const ProductsGrid = () => {
 				"Tool Integrations",
 				"Guided Learning Paths",
 			],
-			stats: { launch: "Oct 1, 2025", tools: "100+", labs: "50+" },
+			stats: { tools: "100+", labs: "50+", users: "25k+" },
 			color: "from-gray-500 to-slate-600",
 			accentColor: "gray-500",
 			gradient: "from-gray-500/20 via-slate-500/20 to-gray-600/20",
-			badge: "Launching Soon",
+			badge: "Cybersecurity",
 			href: "/products/penquinx",
+		},
+		{
+			name: "NexorX",
+			description:
+				"Empowering rural communities with advanced technical skills and real-world applications. Learn cutting-edge technologies, industry trends, and practical skills that bridge the gap between traditional education and modern workforce demands.",
+			icon: BookOpen,
+			features: [
+				"Advanced Technical Training",
+				"Real-World Applications",
+				"Industry Trend Analysis",
+				"Rural Community Focus",
+			],
+			stats: { courses: "Coming Soon", skills: "50+", impact: "Rural" },
+			color: "from-orange-500 to-amber-500",
+			accentColor: "orange-500",
+			gradient: "from-orange-500/20 via-amber-500/20 to-orange-600/20",
+			badge: "Coming Soon",
+			href: "#",
 		},
 	];
 
@@ -231,7 +231,7 @@ const ProductsGrid = () => {
 						return (
 							<Card
 								key={product.name}
-								className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 ${
+								className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 flex flex-col h-full ${
 									visibleItems.has(index)
 										? "scroll-reveal revealed"
 										: "scroll-reveal"
@@ -272,7 +272,7 @@ const ProductsGrid = () => {
 									</CardDescription>
 								</CardHeader>
 
-								<CardContent className="relative z-10 space-y-6">
+								<CardContent className="relative z-10 space-y-6 flex flex-col flex-grow">
 									{/* Features */}
 									<div className="space-y-3">
 										<h4 className="font-semibold text-black text-sm uppercase tracking-wide">
@@ -310,16 +310,18 @@ const ProductsGrid = () => {
 										</div>
 									)}
 
-									{/* Action Button */}
-									<Button
-										className="w-full bg-black hover:bg-gray-800 text-white hover:shadow-lg group/btn transition-all duration-300"
-										size="lg"
-										onClick={() => navigate(product.href)}>
-										<span className="flex items-center">
-											Explore {product.name}
-											<ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
-										</span>
-									</Button>
+									{/* Action Button - Pushed to bottom */}
+									<div className="mt-auto pt-4">
+										<Button
+											className="w-full bg-black hover:bg-gray-800 text-white hover:shadow-lg group/btn transition-all duration-300"
+											size="lg"
+											onClick={() => navigate(product.href)}>
+											<span className="flex items-center">
+												Explore {product.name}
+												<ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform duration-300" />
+											</span>
+										</Button>
+									</div>
 								</CardContent>
 
 								{/* Hover Effects */}

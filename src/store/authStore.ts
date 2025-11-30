@@ -10,6 +10,8 @@ interface AuthState {
   login: (data: LoginRequest) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
+  setUser: (user: User | null) => void;
+  setToken: (token: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,6 +21,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (data) => {
     const response = await authService.login(data);
     if (response.data.token) {
+      localStorage.setItem("auth_token", response.data.token);
       set({
         user: response.data.user,
         token: response.data.token,
@@ -39,5 +42,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       // A more robust solution would be to fetch user profile from the server.
       set({ isAuthenticated: true, token });
     }
+  },
+  setUser: (user) => {
+    set({ user, isAuthenticated: !!user });
+  },
+  setToken: (token) => {
+    if (token) {
+      localStorage.setItem("auth_token", token);
+    } else {
+      localStorage.removeItem("auth_token");
+    }
+    set({ token, isAuthenticated: !!token });
   },
 }));

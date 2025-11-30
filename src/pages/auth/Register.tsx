@@ -15,9 +15,9 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SeoMeta } from "@/components/SeoMeta";
 import { PAGE_PATHS } from "@/seo/routeMeta";
-import useAuth from "@/hooks/useAuth";
 import useApiRequest from "@/hooks/useApiRequest";
-import { getIdToken } from "@/firebase/auth";
+import { useAuthStore } from "@/store/authStore";
+import Recaptcha from "@/components/Recaptcha";
 
 const Register = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -25,68 +25,95 @@ const Register = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
+	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
 	const navigate = useNavigate();
-	const {
-		verifyEmail,
-		signUp,
-		error: authError,
-		loading: authLoading,
-		clearError,
-	} = useAuth();
 	const { post } = useApiRequest();
-
+	const { setUser, setToken } = useAuthStore();
 	const { toast } = useToast();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		clearError();
 		setIsLoading(true);
+		
 		// Validation
 		if (password !== confirmPassword) {
-			alert("Passwords don't match");
+			toast({
+				variant: "destructive",
+				title: "Validation Error",
+				description: "Passwords don't match",
+			});
 			setIsLoading(false);
 			return;
 		}
 
 		if (password.length < 6) {
-			alert("Password must be at least 6 characters");
+			toast({
+				variant: "destructive",
+				title: "Validation Error",
+				description: "Password must be at least 6 characters",
+			});
 			setIsLoading(false);
 			return;
 		}
-		try {
-			// Step 1: Create Firebase user
-			const user = await signUp(name, email, password);
-			if (!user.emailVerified) {
-				await verifyEmail();
-				navigate("/auth/verify-email");
+
+		// Re-execute reCAPTCHA to get a fresh token
+		let freshToken = recaptchaToken;
+		const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+		
+		if (siteKey && window.grecaptcha && window.grecaptcha.ready) {
+			try {
+				await window.grecaptcha.ready();
+				freshToken = await window.grecaptcha.execute(siteKey, { action: 'register' });
+				console.log('reCAPTCHA token generated:', freshToken ? 'Success' : 'Failed');
+				if (freshToken) {
+					setRecaptchaToken(freshToken);
+				}
+			} catch (error) {
+				console.error('reCAPTCHA execution error:', error);
+				// Continue with existing token if re-execution fails
 			}
-		} catch (err) {
+		}
+
+		// Only require token if site key is configured
+		if (siteKey && !freshToken) {
 			toast({
 				variant: "destructive",
-				title: "Registration Failed",
-				description: err.message,
+				title: "reCAPTCHA Error",
+				description: "Please wait for reCAPTCHA to load and try again",
 			});
 			setIsLoading(false);
 			return;
 		}
 
 		try {
-			// Retrieve ID token from Firebase and attach to Authorization header
-			let token: string | null = null;
-			try {
-				token = await getIdToken();
-			} catch (tokenErr) {
-				console.warn("Failed to get ID token:", tokenErr);
+			// Register with backend
+			const response = await post("/auth/register", {
+				name,
+				email,
+				password,
+				confirmPassword,
+				recaptchaToken: freshToken,
+			});
+
+			if (response && response.success) {
+				toast({
+					title: "Registration Successful",
+					description: "Please check your email to verify your account.",
+				});
+				// Navigate to email verification page
+				navigate("/auth/verify-email", { state: { email } });
 			}
-
-			const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-			await post("/api/auth/register-firebase", { name }, { headers });
-		} catch (err) {
+		} catch (err: any) {
+			console.error('Registration error details:', err);
+			const errorMessage = err.response?.data?.message || 
+			                     err.message || 
+			                     err.error || 
+			                     "An error occurred during registration";
 			toast({
+				variant: "destructive",
 				title: "Registration Failed",
-				description: err.message,
+				description: errorMessage,
 			});
 		} finally {
 			setIsLoading(false);
@@ -168,7 +195,20 @@ const Register = () => {
 								/>
 							</div>
 
-							<Button className="w-full" type="submit" disabled={isLoading}>
+							<Recaptcha
+								version="v3"
+								action="register"
+								onVerify={(token) => setRecaptchaToken(token)}
+								onError={(error) => {
+									toast({
+										variant: "destructive",
+										title: "reCAPTCHA Error",
+										description: error,
+									});
+								}}
+							/>
+
+							<Button className="w-full" type="submit" disabled={isLoading || !recaptchaToken}>
 								{isLoading ? (
 									<Loader2 className="h-4 w-4 animate-spin" />
 								) : (

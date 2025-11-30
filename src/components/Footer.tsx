@@ -112,45 +112,28 @@ const Footer = () => {
 								TimeX - Attendance Management
 							</Link>
 							<Link
-								to="/products/corex"
-								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
-								CoreX - ERP Solution
-							</Link>
-							<Link
-								to="/products/fleetx"
-								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
-								FleetX - Fleet Management
-							</Link>
-							<Link
 								to="/products/xsafety"
 								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
 								XSafety - Safety Management System
 							</Link>
 							<Link
-								to="/products/medzorx"
-								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
-								MedzorX - Hospital Management
-							</Link>
-							<Link
-								to="/products/penquin"
-								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
-								PenquinX - Cybersecurity Learning Platform
-							</Link>
-							<Link
-								to="/products/docX"
-								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
-								DocX - Intelligent Document Control.
-							</Link>
-							<Link
-								to="/products/penquin"
+								to="/products/workx365"
 								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
 								WorkX 365 - Workforce Management
 							</Link>
 							<Link
-								to="/products/penquin"
+								to="/products/gitx"
 								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
 								GitX - Seamless Github to Server Deployment
 							</Link>
+							<Link
+								to="/products/penquinx"
+								className="block text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm">
+								PenquinX - Cybersecurity Learning Platform
+							</Link>
+							<span className="block text-primary-foreground/60 text-sm">
+								NexorX - Advanced Technical Training (Coming Soon)
+							</span>
 						</div>
 					</div>
 

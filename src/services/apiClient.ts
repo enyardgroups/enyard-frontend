@@ -6,14 +6,14 @@ import { auth } from "@/firebase/config";
  * Automatically attaches Firebase ID token to all requests
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3011";
 
 /**
  * Create API client instance with Firebase token injection
  */
 const createApiClient = (): AxiosInstance => {
 	const client = axios.create({
-		baseURL: API_BASE_URL,
+		baseURL: `${API_BASE_URL}/api`,
 		timeout: 10000,
 		headers: {
 			"Content-Type": "application/json",
@@ -21,18 +21,18 @@ const createApiClient = (): AxiosInstance => {
 	});
 
 	/**
-	 * Request interceptor: Inject Firebase ID token
+	 * Request interceptor: Inject JWT token from localStorage
 	 */
 	client.interceptors.request.use(
 		async (config) => {
 			try {
-				const user = auth.currentUser;
-				if (user) {
-					const token = await user.getIdToken(true); // force refresh
+				// Use JWT token from localStorage (set by backend)
+				const token = localStorage.getItem("auth_token");
+				if (token) {
 					config.headers.Authorization = `Bearer ${token}`;
 				}
 			} catch (error) {
-				console.error("Failed to get Firebase token:", error);
+				console.error("Failed to get auth token:", error);
 				// Continue anyway - endpoint may not require auth
 			}
 			return config;

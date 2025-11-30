@@ -5,6 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	MapPin,
 	Clock,
 	DollarSign,
@@ -13,6 +28,8 @@ import {
 	GraduationCap,
 	Coffee,
 	Gamepad2,
+	Upload,
+	X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Social } from "@/assets";
@@ -23,6 +40,45 @@ const Career = () => {
 	const navigate = useNavigate();
 
 	const [scrollY, setScrollY] = useState(0);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [selectedRole, setSelectedRole] = useState<string>("");
+	const [formData, setFormData] = useState({
+		name: "",
+		gender: "",
+		email: "",
+		mobile: "",
+		resume: null as File | null,
+		workType: "",
+		employmentType: "",
+		role: "",
+	});
+	const [typedCulture, setTypedCulture] = useState("");
+
+	const cultureCode = `const ENYARDCulture = {
+  values: {
+    innovation: 'Continuous learning and experimentation',
+    collaboration: 'Transparent communication across teams',
+    balance: 'Work-life harmony and mental wellness',
+    diversity: 'Inclusive environment for all talents'
+  },
+  
+  practices: {
+    remoteFirst: true,
+    innovationTime: '20% of time for passion projects',
+    transparentCommunication: true,
+    flexibleHours: true
+  },
+  
+  benefits: [
+    'Remote-first culture',
+    'Transparent communication',
+    'Innovation time (20% projects)',
+    'Diversity and inclusion'
+  ]
+};
+
+// Building tomorrow, together
+const team = new ENYARDCulture();`;
 
 	useEffect(() => {
 		const handleScroll = () => setScrollY(window.scrollY);
@@ -30,66 +86,130 @@ const Career = () => {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
+	useEffect(() => {
+		let currentIndex = 0;
+		const typingInterval = setInterval(() => {
+			if (currentIndex < cultureCode.length) {
+				setTypedCulture(cultureCode.slice(0, currentIndex + 1));
+				currentIndex++;
+			} else {
+				clearInterval(typingInterval);
+			}
+		}, 30);
+
+		return () => clearInterval(typingInterval);
+	}, [cultureCode]);
+
 	const positions = [
+		{
+			title: "Business Development Executive",
+			department: "Business Development",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "3LPA - 8LPA",
+			tags: ["Sales", "Business Development", "Client Relations"],
+			description:
+				"Drive business growth through strategic partnerships and client acquisition.",
+		},
+		{
+			title: "Sales Executive",
+			department: "Sales",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "3LPA - 10LPA",
+			tags: ["Sales", "Customer Relations", "Negotiation"],
+			description:
+				"Build relationships with clients and drive revenue growth.",
+		},
+		{
+			title: "Digital Marketing",
+			department: "Marketing",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "4LPA - 12LPA",
+			tags: ["SEO", "Social Media", "Content Marketing"],
+			description:
+				"Create and execute digital marketing strategies to enhance brand presence.",
+		},
+		{
+			title: "Graphic Designer",
+			department: "Design",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "3LPA - 10LPA",
+			tags: ["Adobe Creative Suite", "UI/UX", "Branding"],
+			description:
+				"Create visually compelling designs for digital and print media.",
+		},
+		{
+			title: "Video Editor",
+			department: "Content",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "4LPA - 12LPA",
+			tags: ["Premiere Pro", "After Effects", "Video Production"],
+			description:
+				"Edit and produce high-quality video content for marketing and branding.",
+		},
+		{
+			title: "Content Creator",
+			department: "Content",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "3LPA - 8LPA",
+			tags: ["Content Writing", "Social Media", "SEO"],
+			description:
+				"Create engaging content across various platforms and formats.",
+		},
 		{
 			title: "Senior Full Stack Developer",
 			department: "Engineering",
-			location: "Remote / Hybrid",
+			location: "On-site / Remote",
 			type: "Full-time",
-			salary: "$80k - $120k",
-			tags: ["React", "Node.js", "TypeScript", "AI Integration"],
+			salary: "12LPA - 25LPA",
+			tags: ["React", "Node.js", "TypeScript", "Full Stack"],
 			description:
-				"Lead development of AI-powered applications and mentor junior developers.",
+				"Lead development of full-stack applications and mentor junior developers.",
+		},
+		{
+			title: "Junior Full Stack Developer",
+			department: "Engineering",
+			location: "On-site / Remote",
+			type: "Full-time",
+			salary: "5LPA - 12LPA",
+			tags: ["React", "Node.js", "JavaScript", "Learning"],
+			description:
+				"Build and maintain web applications with mentorship and growth opportunities.",
 		},
 		{
 			title: "AI/ML Engineer",
-			department: "Research",
-			location: "Remote",
+			department: "Engineering",
+			location: "On-site / Remote",
 			type: "Full-time",
-			salary: "$100k - $150k",
-			tags: ["Python", "TensorFlow", "PyTorch", "NLP"],
+			salary: "10LPA - 20LPA",
+			tags: ["Python", "TensorFlow", "PyTorch", "Machine Learning"],
 			description:
-				"Design and implement AI solutions that power our innovative products.",
-		},
-		{
-			title: "UX/UI Designer",
-			department: "Design",
-			location: "On-site / Hybrid",
-			type: "Full-time",
-			salary: "$70k - $100k",
-			tags: ["Figma", "Design Systems", "User Research", "Prototyping"],
-			description:
-				"Create intuitive and beautiful user experiences for our software solutions.",
+				"Design and implement AI/ML solutions that power our innovative products.",
 		},
 		{
 			title: "DevOps Engineer",
 			department: "Infrastructure",
-			location: "Remote",
+			location: "On-site / Remote",
 			type: "Full-time",
-			salary: "$90k - $130k",
+			salary: "8LPA - 18LPA",
 			tags: ["AWS", "Docker", "Kubernetes", "CI/CD"],
 			description:
 				"Build and maintain scalable cloud infrastructure for our applications.",
 		},
 		{
-			title: "Product Manager",
-			department: "Product",
-			location: "Hybrid",
-			type: "Full-time",
-			salary: "$85k - $120k",
-			tags: ["Strategy", "Analytics", "Agile", "User Stories"],
-			description:
-				"Drive product vision and strategy for our innovative software solutions.",
-		},
-		{
-			title: "Frontend Developer (Intern)",
-			department: "Engineering",
-			location: "Remote",
+			title: "Research Intern",
+			department: "Research",
+			location: "On-site / Remote",
 			type: "Internship",
-			salary: "$20k - $30k",
-			tags: ["React", "JavaScript", "CSS", "Learning"],
+			salary: "Rs 25,000 - Rs 75,000/month",
+			tags: ["Research", "Analysis", "Learning"],
 			description:
-				"Learn and contribute to our frontend development with mentorship.",
+				"Conduct research and analysis to support innovation and product development.",
 		},
 	];
 
@@ -118,6 +238,44 @@ const Career = () => {
 			description: "Enjoy unlimited PTO and company-wide mental health days.",
 		},
 	];
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (e.target.files && e.target.files[0]) {
+			setFormData((prev) => ({ ...prev, resume: e.target.files![0] }));
+		}
+	};
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		// Handle form submission here
+		console.log("Form submitted:", formData);
+		alert("Application submitted successfully! We'll get back to you soon.");
+		setIsFormOpen(false);
+		setFormData({
+			name: "",
+			gender: "",
+			email: "",
+			mobile: "",
+			resume: null,
+			workType: "",
+			employmentType: "",
+			role: selectedRole || "",
+		});
+		setSelectedRole("");
+	};
+
+	const openForm = (role?: string) => {
+		if (role) {
+			setSelectedRole(role);
+			setFormData((prev) => ({ ...prev, role }));
+		}
+		setIsFormOpen(true);
+	};
 
 	return (
 		<>
@@ -171,7 +329,7 @@ const Career = () => {
 				<section className="py-24 relative">
 					<div className="container">
 						<div className="text-center mb-16">
-							<h2 className="text-5xl font-bold mb-8 text-gradient">
+							<h2 className="text-5xl font-bold mb-8 text-black">
 								Why Join Us?
 							</h2>
 							<p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -201,7 +359,7 @@ const Career = () => {
 					<div className="absolute inset-0 grid-lines opacity-20" />
 					<div className="container relative z-10">
 						<div className="text-center mb-16">
-							<h2 className="text-5xl font-bold mb-8 text-gradient">
+							<h2 className="text-5xl font-bold mb-8 text-black">
 								Open Positions
 							</h2>
 							<p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -227,8 +385,9 @@ const Career = () => {
 										<Button
 											variant="outline"
 											size="sm"
+											onClick={() => openForm(position.title)}
 											className="opacity-0 group-hover:opacity-100 transition-opacity">
-											Apply
+											Apply Now
 										</Button>
 									</div>
 
@@ -273,7 +432,7 @@ const Career = () => {
 					<div className="container relative z-10">
 						<div className="grid lg:grid-cols-2 gap-16 items-center">
 							<div>
-								<h2 className="text-5xl font-bold mb-8 text-gradient">
+								<h2 className="text-5xl font-bold mb-8 text-black">
 									Our Culture
 								</h2>
 								<p className="text-xl text-muted-foreground mb-8 leading-relaxed">
@@ -331,7 +490,12 @@ const Career = () => {
 								</div>
 								<hr className="border-gray-700" />
 								<div className="font-mono p-4 text-sm text-gray-300 space-y-2 h-80 overflow-auto">
-									<img src={Social.teamwork} alt="teamwork" />
+									<pre className="whitespace-pre-wrap">
+										{typedCulture}
+										{typedCulture.length < cultureCode.length && (
+											<span className="inline-block w-2 h-4 bg-green-400 animate-pulse ml-1"></span>
+										)}
+									</pre>
 								</div>
 							</div>
 						</div>
@@ -341,7 +505,7 @@ const Career = () => {
 				{/* CTA Section */}
 				<section className="py-24">
 					<div className="container text-center">
-						<h2 className="text-5xl font-bold mb-8 text-gradient">
+						<h2 className="text-5xl font-bold mb-8 text-black">
 							Ready to Start?
 						</h2>
 						<p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
@@ -349,7 +513,9 @@ const Career = () => {
 							talent. Send us your resume and let's start a conversation.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<Button size="lg">Submit Your Resume</Button>
+							<Button size="lg" onClick={() => openForm()}>
+								Submit Your Resume
+							</Button>
 							<Button
 								onClick={() => navigate("/about")}
 								size="lg"
@@ -359,6 +525,184 @@ const Career = () => {
 						</div>
 					</div>
 				</section>
+
+				{/* Application Form Dialog */}
+				<Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+					<DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+						<DialogHeader>
+							<DialogTitle className="text-2xl font-bold">
+								Job Application Form
+							</DialogTitle>
+						</DialogHeader>
+						<form onSubmit={handleSubmit} className="space-y-6 mt-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Label htmlFor="name">Full Name *</Label>
+									<Input
+										id="name"
+										name="name"
+										value={formData.name}
+										onChange={handleInputChange}
+										required
+										placeholder="Enter your full name"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="gender">Gender *</Label>
+									<Select
+										value={formData.gender}
+										onValueChange={(value) =>
+											setFormData((prev) => ({ ...prev, gender: value }))
+										}
+										required>
+										<SelectTrigger>
+											<SelectValue placeholder="Select gender" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="male">Male</SelectItem>
+											<SelectItem value="female">Female</SelectItem>
+											<SelectItem value="other">Other</SelectItem>
+											<SelectItem value="prefer-not-to-say">
+												Prefer not to say
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Label htmlFor="email">Email *</Label>
+									<Input
+										id="email"
+										name="email"
+										type="email"
+										value={formData.email}
+										onChange={handleInputChange}
+										required
+										placeholder="your.email@example.com"
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="mobile">Mobile Number *</Label>
+									<Input
+										id="mobile"
+										name="mobile"
+										type="tel"
+										value={formData.mobile}
+										onChange={handleInputChange}
+										required
+										placeholder="+91 1234567890"
+									/>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="role">Applying For *</Label>
+								<Select
+									value={formData.role || selectedRole}
+									onValueChange={(value) => {
+										setFormData((prev) => ({ ...prev, role: value }));
+										setSelectedRole(value);
+									}}
+									required>
+									<SelectTrigger>
+										<SelectValue placeholder="Select a role" />
+									</SelectTrigger>
+									<SelectContent>
+										{positions.map((pos) => (
+											<SelectItem key={pos.title} value={pos.title}>
+												{pos.title}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<div className="space-y-2">
+									<Label htmlFor="workType">Work Type *</Label>
+									<Select
+										value={formData.workType}
+										onValueChange={(value) =>
+											setFormData((prev) => ({ ...prev, workType: value }))
+										}
+										required>
+										<SelectTrigger>
+											<SelectValue placeholder="Select work type" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="onsite">On-site</SelectItem>
+											<SelectItem value="remote">Remote</SelectItem>
+											<SelectItem value="hybrid">Hybrid</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="employmentType">Employment Type *</Label>
+									<Select
+										value={formData.employmentType}
+										onValueChange={(value) =>
+											setFormData((prev) => ({
+												...prev,
+												employmentType: value,
+											}))
+										}
+										required>
+										<SelectTrigger>
+											<SelectValue placeholder="Select employment type" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="full-time">Full-time</SelectItem>
+											<SelectItem value="intern">Intern</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="resume">Upload Resume *</Label>
+								<div className="flex items-center gap-4">
+									<Input
+										id="resume"
+										name="resume"
+										type="file"
+										accept=".pdf,.doc,.docx"
+										onChange={handleFileChange}
+										required
+										className="cursor-pointer"
+									/>
+									{formData.resume && (
+										<div className="flex items-center gap-2 text-sm text-muted-foreground">
+											<span>{formData.resume.name}</span>
+											<button
+												type="button"
+												onClick={() =>
+													setFormData((prev) => ({ ...prev, resume: null }))
+												}
+												className="text-red-500 hover:text-red-700">
+												<X className="h-4 w-4" />
+											</button>
+										</div>
+									)}
+								</div>
+								<p className="text-xs text-muted-foreground">
+									Accepted formats: PDF, DOC, DOCX (Max 5MB)
+								</p>
+							</div>
+
+							<div className="flex justify-end gap-4 pt-4">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setIsFormOpen(false)}>
+									Cancel
+								</Button>
+								<Button type="submit">Submit Application</Button>
+							</div>
+						</form>
+					</DialogContent>
+				</Dialog>
 
 				<Footer />
 			</div>

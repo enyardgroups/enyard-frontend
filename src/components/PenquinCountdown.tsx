@@ -37,8 +37,8 @@ const PenquinCountdown = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const { toast } = useToast();
 
-	// Launch date: October 1, 2025
-	const launchDate = new Date("2025-11-26T00:00:00").getTime();
+	// Launch date: December 10, 2025 at 6:30 PM
+	const launchDate = new Date("2025-12-10T18:30:00").getTime();
 
 	useEffect(() => {
 		const timer = setInterval(() => {

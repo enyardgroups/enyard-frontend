@@ -23,6 +23,7 @@ import ricspace from "./brands/ricspace.png";
 import enyard from "./brands/enyard.png";
 import nexora from "./brands/nexora.png";
 import azra from "./brands/azra.png";
+import secureworldz from "./brands/secure_worldz.png";
 
 export const Brands = {
 	boobataxi,
@@ -32,6 +33,7 @@ export const Brands = {
 	enyard,
 	nexora,
 	azra,
+	secureworldz,
 };
 
 /* ------------------------------------------------------------------ */

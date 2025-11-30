@@ -20,7 +20,7 @@ const firebaseConfig = {
 /**
  * Validate Firebase configuration
  */
-function validateFirebaseConfig(): void {
+function validateFirebaseConfig(): boolean {
 	const requiredKeys: (keyof typeof firebaseConfig)[] = [
 		"apiKey",
 		"authDomain",
@@ -37,26 +37,34 @@ function validateFirebaseConfig(): void {
 			`⚠️ Missing Firebase configuration: ${missingKeys.join(", ")}. ` +
 				`Please check your .env file and ensure all required Firebase credentials are set.`
 		);
+		return false;
 	}
+	return true;
 }
 
 // Validate on import
-validateFirebaseConfig();
+const isFirebaseConfigValid = validateFirebaseConfig();
 
 /**
- * Initialize Firebase App
+ * Initialize Firebase App safely
  */
-export const firebaseApp = initializeApp(firebaseConfig);
+let firebaseApp: ReturnType<typeof initializeApp> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
+let db: ReturnType<typeof getFirestore> | null = null;
 
-/**
- * Get Firebase Auth instance
- */
-export const auth = getAuth(firebaseApp);
-console.log("Firebase Auth initialized:", auth);
+if (isFirebaseConfigValid) {
+	try {
+		firebaseApp = initializeApp(firebaseConfig);
+		auth = getAuth(firebaseApp);
+		db = getFirestore(firebaseApp);
+		console.log("Firebase initialized successfully");
+	} catch (error) {
+		console.error("Failed to initialize Firebase:", error);
+		// App will continue to work without Firebase
+	}
+} else {
+	console.warn("Firebase not initialized due to missing configuration");
+}
 
-/**
- * Get Firebase Firestore instance
- */
-export const db = getFirestore(firebaseApp);
-
+export { firebaseApp, auth, db };
 export default firebaseApp;

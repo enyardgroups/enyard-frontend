@@ -1008,7 +1008,7 @@ const Penquin = () => {
 										setShowLoginPrompt(false);
 										setIsDialogOpen(false);
 									}}
-									className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800">
+									className="flex-1 bg-gray-800 border-gray-600 text-white hover:bg-gray-700 hover:border-gray-500">
 									Cancel
 								</Button>
 								<Button

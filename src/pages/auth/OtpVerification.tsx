@@ -9,12 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import useApiRequest from "@/hooks/useApiRequest";
 import { PAGE_PATHS } from "@/seo/routeMeta";
 import { Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { trackAuth, trackFormSubmit } from "@/utils/analytics";
 import { getDeviceId, getDeviceInfo } from "@/utils/deviceFingerprint";
 import { useAuthStore } from "@/store/authStore";
@@ -22,6 +22,7 @@ import { useAuthStore } from "@/store/authStore";
 const OtpVerification = () => {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
+	const { toast } = useToast();
 	const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 	const [isLoading, setIsLoading] = useState(false);
 	const { post, get } = useApiRequest();

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { PAGE_PATHS } from "@/seo/routeMeta";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import useApiRequest from "@/hooks/useApiRequest";
 import Recaptcha from "@/components/Recaptcha";
@@ -20,6 +20,7 @@ import Recaptcha from "@/components/Recaptcha";
 const PhoneNumber = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [countryCode, setCountryCode] = useState("+91");
 	const [phoneNumber, setPhoneNumber] = useState("");
 	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -72,7 +73,10 @@ const PhoneNumber = () => {
 
 			// 6. Navigate to OTP validation
 			localStorage.setItem("phone", phone);
-			navigate("/auth/otp-verification");
+			// Pass redirect parameter if present
+			const redirect = searchParams.get("redirect");
+			const otpPath = redirect ? `/auth/otp-verification?redirect=${encodeURIComponent(redirect)}` : "/auth/otp-verification";
+			navigate(otpPath);
 		} catch (err: any) {
 			console.error("Request OTP failed:", err);
 

@@ -49,8 +49,11 @@ import secureWorldzLogo from "@/assets/brands/Secure Worldz.png";
 const Penquin = () => {
 	const { toast } = useToast();
 	const navigate = useNavigate();
-	const { isAuthenticated } = useAuthStore();
+	const { isAuthenticated, user } = useAuthStore();
 	const { post, get } = useApiRequest();
+	
+	// Check if user has verified phone number
+	const hasVerifiedPhone = isAuthenticated && user && (user as any).phone_verified === true;
 	const [timeLeft, setTimeLeft] = useState({
 		days: 0,
 		hours: 0,
@@ -790,9 +793,10 @@ const Penquin = () => {
 									(userDetails.firstName ? `${userDetails.firstName}${userDetails.lastName ? ` ${userDetails.lastName}` : ''}` : '');
 								
 								// Parse phone number to extract country code and mobile
+								// Only pre-fill phone if it's verified
 								let countryCode = "+91";
 								let mobile = "";
-								if (userDetails.phone) {
+								if (userDetails.phone && (userDetails as any).phone_verified === true) {
 									// Try to extract country code (common formats: +91XXXXXXXXXX, +1XXXXXXXXXX, etc.)
 									const phoneMatch = userDetails.phone.match(/^(\+\d{1,3})(\d+)$/);
 									if (phoneMatch) {
@@ -885,7 +889,7 @@ const Penquin = () => {
 										<select
 											value={formData.countryCode}
 											onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-											disabled={isAuthenticated}
+											disabled={hasVerifiedPhone}
 											className="bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
 											<option value="+1">🇺🇸 +1</option>
 											<option value="+44">🇬🇧 +44</option>
@@ -912,12 +916,12 @@ const Penquin = () => {
 												}
 											}}
 											maxLength={10}
-											disabled={isAuthenticated}
+											disabled={hasVerifiedPhone}
 											className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-cyan-500 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
 											placeholder="9876543210"
 										/>
 									</div>
-									{isAuthenticated ? (
+									{hasVerifiedPhone ? (
 										<p className="text-xs text-cyan-400 mt-1">
 											Using your verified phone number
 										</p>

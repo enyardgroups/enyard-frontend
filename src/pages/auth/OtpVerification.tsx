@@ -21,6 +21,7 @@ import { useAuthStore } from "@/store/authStore";
 
 const OtpVerification = () => {
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 	const [isLoading, setIsLoading] = useState(false);
 	const { post, get } = useApiRequest();
@@ -136,9 +137,10 @@ const OtpVerification = () => {
 				});
 				localStorage.removeItem("phone");
 				
-				// Redirect to home page
+				// Check for redirect parameter
+				const redirect = searchParams.get("redirect") || "/";
 				setTimeout(() => {
-				navigate("/");
+					navigate(redirect);
 				}, 1000);
 			} else {
 				throw new Error("Invalid response from server");

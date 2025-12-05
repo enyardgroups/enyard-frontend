@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -33,6 +33,7 @@ const Register = () => {
 	const { post } = useApiRequest();
 	const { setUser, setToken } = useAuthStore();
 	const { toast } = useToast();
+	const [searchParams] = useSearchParams();
 
 	// Memoize callbacks to prevent reCAPTCHA re-renders
 	const handleRecaptchaVerify = useCallback((token: string) => {
@@ -124,7 +125,13 @@ const Register = () => {
 			// If we reach here, registration was successful
 			// Navigate immediately to email verification page
 			// This will show "Check your mail to verify your email" message
-			navigate("/auth/verify-email", { state: { email, fromRegistration: true } });
+			// Pass redirect parameter if present
+			const redirect = searchParams.get("redirect");
+			const verifyEmailState: any = { email, fromRegistration: true };
+			if (redirect) {
+				verifyEmailState.redirect = redirect;
+			}
+			navigate("/auth/verify-email", { state: verifyEmailState });
 		} catch (err: any) {
 			// Track failed registration
 			trackAuth("register", "email", false);
@@ -241,7 +248,9 @@ const Register = () => {
 
 						<div className="mt-4 text-center text-sm">
 							Already have an account?{" "}
-							<Link to="/auth/login" className="underline">
+							<Link 
+								to={searchParams.get("redirect") ? `/auth/login?redirect=${encodeURIComponent(searchParams.get("redirect")!)}` : "/auth/login"} 
+								className="underline">
 								Sign in
 							</Link>
 						</div>

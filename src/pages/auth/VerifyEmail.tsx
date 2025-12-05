@@ -77,8 +77,11 @@ const VerifyEmail = () => {
 			});
 			
 			// Navigate to phone verification after a short delay
+			// Check for redirect parameter from location state
+			const redirect = (location.state as any)?.redirect;
+			const verifyPhonePath = redirect ? `/auth/verify-phone?redirect=${encodeURIComponent(redirect)}` : "/auth/verify-phone";
 			setTimeout(() => {
-				navigate("/auth/verify-phone", { replace: true });
+				navigate(verifyPhonePath, { replace: true });
 			}, 2000);
 		} catch (error: any) {
 			setIsVerified(false);
@@ -100,8 +103,11 @@ const VerifyEmail = () => {
 					title: "Email Already Verified",
 					description: "Your email was already verified. Redirecting to phone verification...",
 				});
+				// Check for redirect parameter from location state
+				const redirect = (location.state as any)?.redirect;
+				const verifyPhonePath = redirect ? `/auth/verify-phone?redirect=${encodeURIComponent(redirect)}` : "/auth/verify-phone";
 				setTimeout(() => {
-					navigate("/auth/verify-phone", { replace: true });
+					navigate(verifyPhonePath, { replace: true });
 				}, 2000);
 			} else {
 				toast({

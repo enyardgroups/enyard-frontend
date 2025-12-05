@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 declare global {
 	interface Window {
@@ -45,6 +45,7 @@ const Login = () => {
 	const { post } = useApiRequest();
 	const navigate = useNavigate();
 	const { toast } = useToast();
+	const [searchParams] = useSearchParams();
 
 	const handlePasswordLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -87,7 +88,9 @@ const Login = () => {
 					title: "Login Successful",
 					description: "Welcome back!",
 				});
-				navigate("/");
+				// Check for redirect parameter
+				const redirect = searchParams.get("redirect") || "/";
+				navigate(redirect);
 			} else {
 				throw new Error("Invalid response from server");
 			}
@@ -175,7 +178,10 @@ const Login = () => {
 				description: "Please check your phone for the verification code.",
 			});
 			localStorage.setItem("phone", fullPhoneNumber);
-			navigate("/auth/otp-verification");
+			// Pass redirect parameter to OTP verification
+			const redirect = searchParams.get("redirect");
+			const otpPath = redirect ? `/auth/otp-verification?redirect=${encodeURIComponent(redirect)}` : "/auth/otp-verification";
+			navigate(otpPath);
 		} catch (error: any) {
 			// Track failed OTP request
 			trackAuth("login", "passwordless", false);
@@ -266,7 +272,7 @@ const Login = () => {
 											Forgot password?
 										</Link>
 										<Link
-											to="/auth/register"
+											to={searchParams.get("redirect") ? `/auth/register?redirect=${encodeURIComponent(searchParams.get("redirect")!)}` : "/auth/register"}
 											className="text-sm text-primary hover:underline">
 											Sign up
 										</Link>

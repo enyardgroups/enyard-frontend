@@ -15,12 +15,16 @@ import { PAGE_PATHS } from "@/seo/routeMeta";
 import { Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { trackAuth, trackFormSubmit } from "@/utils/analytics";
+import { getDeviceId, getDeviceInfo } from "@/utils/deviceFingerprint";
+import { useAuthStore } from "@/store/authStore";
 
 const OtpVerification = () => {
 	const navigate = useNavigate();
 	const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 	const [isLoading, setIsLoading] = useState(false);
-	const { post } = useApiRequest();
+	const { post, get } = useApiRequest();
+	const { setUser, setToken } = useAuthStore();
 
 	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -71,6 +75,10 @@ const OtpVerification = () => {
 
 		setIsLoading(true);
 		try {
+			// Get device ID and info (silently)
+			const deviceId = getDeviceId();
+			const deviceInfo = getDeviceInfo();
+			
 			// Check if this is for registration (has auth token) or login
 			const token = localStorage.getItem("auth_token");
 			let response;
@@ -79,7 +87,7 @@ const OtpVerification = () => {
 				// Registration flow - verify phone after email verification
 				response = await post(
 					"/sms/verify-otp",
-					{ phone, otp: fullOtp },
+					{ phone, otp: fullOtp, deviceId, deviceInfo },
 					{ headers: { Authorization: `Bearer ${token}` } }
 				);
 			} else {
@@ -87,27 +95,58 @@ const OtpVerification = () => {
 				response = await post("/auth/passwordless/verify-otp", {
 					phone,
 					otp: fullOtp,
+					deviceId,
+					deviceInfo,
 				});
 			}
 
-			if (response.success) {
-				// If token is returned, store it and set user
-				if (response.data.token) {
-					localStorage.setItem("auth_token", response.data.token);
-					const { useAuthStore } = await import("@/store/authStore");
-					const { setUser, setToken } = useAuthStore.getState();
-					setToken(response.data.token);
-					setUser(response.data.user);
+			// The post function returns the full result object
+			// Backend returns: { success: true, data: { user: {...}, token: '...' } }
+			// post returns: { success: true, data: { user: {...}, token: '...' } }
+			// Extract data from response
+			const loginData = response && response.data ? response.data : response;
+			if (loginData && loginData.token) {
+				// Store token and set user
+				setToken(loginData.token);
+				
+				// Set user data if provided, otherwise fetch it
+				if (loginData.user) {
+					setUser(loginData.user);
+				} else {
+					// Fetch user data if not provided
+					try {
+						const userData = await get("/auth/me");
+						if (userData) {
+							setUser(userData);
+						}
+					} catch (err) {
+						console.error("Failed to fetch user data:", err);
+						// Continue anyway - user can still access the app
+					}
 				}
+
+				// Track successful OTP verification
+				const isRegistration = !!localStorage.getItem("auth_token");
+				trackAuth(isRegistration ? "register" : "login", "otp", true);
+				trackFormSubmit("otp_verification", "/auth/otp-verification", true, { phone });
 
 				toast({
 					title: "Verification Successful",
-					description: response.message || "You have been logged in.",
+					description: "Phone verified successfully! You have been logged in.",
 				});
 				localStorage.removeItem("phone");
+				
+				// Redirect to home page
+				setTimeout(() => {
 				navigate("/");
+				}, 1000);
+			} else {
+				throw new Error("Invalid response from server");
 			}
 		} catch (err: any) {
+			// Track failed OTP verification
+			trackAuth("login", "otp", false);
+			trackFormSubmit("otp_verification", "/auth/otp-verification", false, { phone, error: err.message });
 			toast({
 				title: "Invalid OTP",
 				description: err.message || "Please try again",

@@ -29,6 +29,7 @@ import {
 import { businessApplicationService } from "@/services";
 import { useToast } from "@/hooks/use-toast";
 import { ContactMethod } from "@/types";
+import { trackFormSubmit, trackButtonClick } from "@/utils/analytics";
 
 interface BusinessFormProps {
   isOpen: boolean;
@@ -88,6 +89,12 @@ const BusinessForm = ({ isOpen, onOpenChange }: BusinessFormProps) => {
         phone: formData.phone,
         preferredContactMethod: formData.preferredContact,
       });
+      // Track successful form submission
+      trackFormSubmit("business_application", window.location.pathname, true, {
+        companyName: formData.companyName,
+        industry: formData.industry,
+        companySize: formData.companySize,
+      });
       toast({
         title: "Application Submitted",
         description: "Thank you! We will be in touch with you shortly.",
@@ -108,6 +115,10 @@ const BusinessForm = ({ isOpen, onOpenChange }: BusinessFormProps) => {
         preferredContact: "email" as ContactMethod,
       });
     } catch (error: any) {
+      // Track failed form submission
+      trackFormSubmit("business_application", window.location.pathname, false, {
+        error: error.message,
+      });
       toast({
         title: "Submission Failed",
         description: error.message || "An unexpected error occurred.",

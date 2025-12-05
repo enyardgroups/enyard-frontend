@@ -58,7 +58,7 @@ export class ApiClient {
 
       if (response.status === 401) {
         localStorage.removeItem("auth_token");
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
         throw new Error("Unauthorized");
       }
 

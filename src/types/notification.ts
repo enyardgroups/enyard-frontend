@@ -3,6 +3,7 @@ export interface Notification {
   name: string;
   email: string;
   phone: string;
+  profession?: string;
   createdAt: string;
   updatedAt: string;
 }

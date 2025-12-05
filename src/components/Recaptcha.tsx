@@ -30,7 +30,16 @@ export const Recaptcha = ({
 }: RecaptchaProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const scriptLoadedRef = useRef<boolean>(false);
+  const onVerifyRef = useRef(onVerify);
+  const onErrorRef = useRef(onError);
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+  // Update refs when callbacks change (without causing re-renders)
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onErrorRef.current = onError;
+  }, [onVerify, onError]);
 
   useEffect(() => {
     if (!siteKey) {
@@ -38,30 +47,38 @@ export const Recaptcha = ({
       return;
     }
 
-    // Load reCAPTCHA script
+    // Prevent loading script multiple times
+    if (scriptLoadedRef.current || document.querySelector(`script[src*="recaptcha/api.js"]`)) {
+      return;
+    }
+
+    // Load reCAPTCHA script only once
     const script = document.createElement('script');
     script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`;
     script.async = true;
     script.defer = true;
+    script.id = 'recaptcha-script';
     document.body.appendChild(script);
+    scriptLoadedRef.current = true;
 
     script.onload = () => {
       if (version === 'v3') {
         // v3: Execute on load and provide a function to re-execute
         const executeRecaptcha = () => {
+          if (!window.grecaptcha) return;
           window.grecaptcha.ready(() => {
             window.grecaptcha
               .execute(siteKey, { action })
               .then((token) => {
-                onVerify(token);
+                onVerifyRef.current(token);
               })
               .catch((error) => {
-                onError?.(error.message || 'reCAPTCHA verification failed');
+                onErrorRef.current?.(error.message || 'reCAPTCHA verification failed');
               });
           });
         };
         
-        // Execute immediately on load
+        // Execute immediately on load (only once)
         executeRecaptcha();
         
         // Store execute function for re-execution on form submit
@@ -70,32 +87,33 @@ export const Recaptcha = ({
         }
       } else {
         // v2: Render widget
+        if (window.grecaptcha && containerRef.current) {
         window.grecaptcha.ready(() => {
-          if (containerRef.current) {
+            if (containerRef.current && !widgetIdRef.current) {
             const widgetId = window.grecaptcha.render(containerRef.current, {
               sitekey: siteKey,
               size: size === 'invisible' ? 'invisible' : size,
               theme,
               callback: (token: string) => {
-                onVerify(token);
+                  onVerifyRef.current(token);
               },
               'error-callback': () => {
-                onError?.('reCAPTCHA error occurred');
+                  onErrorRef.current?.('reCAPTCHA error occurred');
               },
             });
             widgetIdRef.current = widgetId;
           }
         });
+        }
       }
     };
 
+    // Cleanup only on unmount
     return () => {
-      // Cleanup
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
+      // Don't remove script on cleanup - it's shared across components
+      // Only reset widget if needed
     };
-  }, [siteKey, size, theme, action, version, onVerify, onError]);
+  }, [siteKey, version, action]); // Only depend on props that should trigger re-initialization
 
   const reset = () => {
     if (widgetIdRef.current !== null && window.grecaptcha) {

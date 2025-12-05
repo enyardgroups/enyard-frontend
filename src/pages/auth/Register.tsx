@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,8 @@ import { PAGE_PATHS } from "@/seo/routeMeta";
 import useApiRequest from "@/hooks/useApiRequest";
 import { useAuthStore } from "@/store/authStore";
 import Recaptcha from "@/components/Recaptcha";
+import { trackAuth, trackFormSubmit } from "@/utils/analytics";
+import { getDeviceId, getDeviceInfo } from "@/utils/deviceFingerprint";
 
 const Register = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +33,19 @@ const Register = () => {
 	const { post } = useApiRequest();
 	const { setUser, setToken } = useAuthStore();
 	const { toast } = useToast();
+
+	// Memoize callbacks to prevent reCAPTCHA re-renders
+	const handleRecaptchaVerify = useCallback((token: string) => {
+		setRecaptchaToken(token);
+	}, []);
+
+	const handleRecaptchaError = useCallback((error: string) => {
+		toast({
+			variant: "destructive",
+			title: "reCAPTCHA Error",
+			description: error,
+		});
+	}, [toast]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -87,24 +102,33 @@ const Register = () => {
 		}
 
 		try {
-			// Register with backend
-			const response = await post("/auth/register", {
+			// Get device ID and info (silently)
+			const deviceId = getDeviceId();
+			const deviceInfo = getDeviceInfo();
+			
+			// Register with backend (include device info silently)
+			await post("/auth/register", {
 				name,
 				email,
 				password,
 				confirmPassword,
 				recaptchaToken: freshToken,
+				deviceId,
+				deviceInfo,
 			});
 
-			if (response && response.success) {
-				toast({
-					title: "Registration Successful",
-					description: "Please check your email to verify your account.",
-				});
-				// Navigate to email verification page
-				navigate("/auth/verify-email", { state: { email } });
-			}
+			// Track successful registration
+			trackAuth("register", "email", true);
+			trackFormSubmit("registration", "/auth/register", true, { email });
+
+			// If we reach here, registration was successful
+			// Navigate immediately to email verification page
+			// This will show "Check your mail to verify your email" message
+			navigate("/auth/verify-email", { state: { email, fromRegistration: true } });
 		} catch (err: any) {
+			// Track failed registration
+			trackAuth("register", "email", false);
+			trackFormSubmit("registration", "/auth/register", false, { email, error: err.message });
 			console.error('Registration error details:', err);
 			const errorMessage = err.response?.data?.message || 
 			                     err.message || 
@@ -198,14 +222,8 @@ const Register = () => {
 							<Recaptcha
 								version="v3"
 								action="register"
-								onVerify={(token) => setRecaptchaToken(token)}
-								onError={(error) => {
-									toast({
-										variant: "destructive",
-										title: "reCAPTCHA Error",
-										description: error,
-									});
-								}}
+								onVerify={handleRecaptchaVerify}
+								onError={handleRecaptchaError}
 							/>
 
 							<Button className="w-full" type="submit" disabled={isLoading || !recaptchaToken}>

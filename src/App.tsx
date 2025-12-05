@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import AdminPanel from "./pages/AdminPanel";
+import AdminDashboard from "./pages/AdminDashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import About from "./pages/About";
 import Career from "./pages/Career";
@@ -35,6 +35,8 @@ import GitX from "./pages/GitX";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import PhoneNumber from "./pages/auth/PhoneNumber";
 import OtpVerification from "./pages/auth/OtpVerification";
+import GoogleAnalytics from "./components/GoogleAnalytics";
+import PageTracking from "./components/PageTracking";
 
 const queryClient = new QueryClient();
 
@@ -42,16 +44,26 @@ const App = () => {
 	const { checkAuth } = useAuthStore();
 
 	useEffect(() => {
-		checkAuth();
+		// Check authentication in background without blocking app load
+		// This allows UI to render immediately while auth check happens
+		const storedToken = localStorage.getItem("auth_token");
+		if (storedToken) {
+			// Check auth in background, don't await
+			checkAuth().catch((error) => {
+				console.error("Failed to check authentication:", error);
+			});
+		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (
 		<QueryClientProvider client={queryClient}>
 			<TooltipProvider>
+				<GoogleAnalytics />
 				<Toaster />
 				<Sonner />
 				<BrowserRouter>
+					<PageTracking />
 					<ScrollToTop />
 					<Routes>
 						<Route path="/" element={<Index />} />
@@ -67,7 +79,7 @@ const App = () => {
 							path="/admin"
 							element={
 								<ProtectedRoute>
-									<AdminPanel />
+									<AdminDashboard />
 								</ProtectedRoute>
 							}
 						/>

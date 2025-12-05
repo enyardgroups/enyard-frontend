@@ -41,19 +41,23 @@ export function useApiRequest<T = unknown>() {
 				}
 
 				const result = response.data;
-				console.log(result);
+				console.log('API Response:', result);
 				if (!result.success) {
 					throw new Error(result.message || "Request failed");
 				}
 
 				setData(result.data);
-				return result.data;
+				// Return the full result object so frontend can access both data and pagination
+				return result;
 			} catch (err) {
 				let errorMessage = "An error occurred";
 				
 				if (err instanceof AxiosError) {
-					// Axios error - extract message from response
-					if (err.response?.data) {
+					// Network errors (server not running, connection refused, etc.)
+					if (err.code === 'ECONNREFUSED' || err.code === 'ERR_NETWORK' || !err.response) {
+						errorMessage = "Cannot connect to server. Please make sure the backend server is running on port 3011.";
+					} else if (err.response?.data) {
+						// Server responded with error
 						errorMessage = err.response.data.message || 
 						              err.response.data.error || 
 						              err.message;
@@ -72,6 +76,7 @@ export function useApiRequest<T = unknown>() {
 				const enhancedError = err instanceof Error ? err : new Error(errorMessage);
 				(enhancedError as any).message = errorMessage;
 				(enhancedError as any).response = err instanceof AxiosError ? err.response : undefined;
+				(enhancedError as any).code = err instanceof AxiosError ? err.code : undefined;
 				throw enhancedError;
 			} finally {
 				setLoading(false);

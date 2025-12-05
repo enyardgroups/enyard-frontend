@@ -6,15 +6,92 @@ import { auth } from "@/firebase/config";
  * Automatically attaches Firebase ID token to all requests
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3011";
+/**
+ * Get API Base URL based on environment
+ * - In production: Uses VITE_API_BASE_URL or detects from current domain
+ * - In development: Uses localhost
+ */
+const getApiBaseUrl = () => {
+  // In development, always use localhost
+  if (import.meta.env.DEV) {
+    const envUrl = import.meta.env.VITE_API_BASE_URL;
+    // If env URL is set to network IP, override it to localhost
+    if (envUrl && envUrl.includes('10.0.0.243')) {
+      console.warn('⚠️  Network IP detected in VITE_API_BASE_URL. Using localhost instead to avoid CORS issues.');
+      return 'http://localhost:3011';
+    }
+    return envUrl || 'http://localhost:3011';
+  }
+  
+  // In production
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  
+  // If VITE_API_BASE_URL is set, use it
+  if (envUrl) {
+    return envUrl;
+  }
+  
+  // Auto-detect API URL based on current domain
+  const currentHost = window.location.hostname;
+  const protocol = window.location.protocol;
+  
+  // Option 1: Use same domain with /api path (recommended - no subdomain needed)
+  // This works if you're using a reverse proxy to serve /api from the same domain
+  if (currentHost === 'enyard.in' || currentHost === 'www.enyard.in' || 
+      currentHost === 'enyard.cloud' || currentHost === 'www.enyard.cloud') {
+    // Use same domain with /api path (reverse proxy setup)
+    const apiUrl = `${protocol}//${currentHost}`;
+    console.log('🔗 Using same-domain API URL:', apiUrl);
+    console.log('📝 Note: API requests will go to /api on the same domain');
+    return apiUrl;
+  }
+  
+  // Option 2: Use API subdomains (if you prefer separate subdomains)
+  // Uncomment below and comment above if you want to use api.enyard.in/api.enyard.cloud
+  /*
+  if (currentHost === 'enyard.in' || currentHost === 'www.enyard.in') {
+    const apiUrl = `${protocol}//api.enyard.in`;
+    console.log('🔗 Auto-detected API URL for enyard.in:', apiUrl);
+    return apiUrl;
+  }
+  
+  if (currentHost === 'enyard.cloud' || currentHost === 'www.enyard.cloud') {
+    const apiUrl = `${protocol}//api.enyard.cloud`;
+    console.log('🔗 Auto-detected API URL for enyard.cloud:', apiUrl);
+    return apiUrl;
+  }
+  */
+  
+  // Option 3: Single API server for both domains
+  // If you want to use a single API server, set VITE_API_BASE_URL in .env
+  // Example: VITE_API_BASE_URL=https://api.enyard.in
+  
+  // Fallback to localhost (shouldn't happen in production)
+  console.warn('⚠️  Could not determine API URL, using localhost fallback');
+  return 'http://localhost:3011';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Log API URL for debugging
+if (import.meta.env.DEV) {
+  console.log('🔗 API Base URL:', API_BASE_URL);
+}
 
 /**
  * Create API client instance with Firebase token injection
  */
 const createApiClient = (): AxiosInstance => {
+	// Determine if API_BASE_URL already includes /api or if we need to add it
+	// If using same-domain setup, API_BASE_URL will be the domain itself (e.g., https://enyard.in)
+	// If using subdomain setup, API_BASE_URL might already include /api
+	const baseURL = API_BASE_URL.endsWith('/api') 
+		? API_BASE_URL 
+		: `${API_BASE_URL}/api`;
+
 	const client = axios.create({
-		baseURL: `${API_BASE_URL}/api`,
-		timeout: 10000,
+		baseURL: baseURL,
+		timeout: 30000, // Increased to 30 seconds for slow networks
 		headers: {
 			"Content-Type": "application/json",
 		},

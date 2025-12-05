@@ -20,19 +20,32 @@ import {
 	FileCode,
 	GitGraph,
 	MonitorCog,
+	User,
+	Grid3x3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/store/authStore";
 
 const Navigation = () => {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 	const location = useLocation();
-	const { isAuthenticated, logout, checkAuth } = useAuthStore();
+	const { isAuthenticated, logout, user } = useAuthStore();
+	
+	// Auth check happens in App.tsx in background - no need to wait here
+	// Navigation shows buttons immediately based on optimistic auth state from localStorage
 
-	useEffect(() => {
-		checkAuth();
-	}, [checkAuth]);
+	// Note: checkAuth is called in App.tsx on mount, so we don't need to call it here
+	// This prevents duplicate calls and ensures user data is loaded before Navigation renders
 
 	const companyItems = [
 		{
@@ -131,7 +144,7 @@ const Navigation = () => {
 	};
 
 	return (
-		<nav className="fixed top-0 left-0 right-0 z-50 glass border-b">
+		<nav className="fixed top-0 left-0 right-0 z-[100] glass border-b backdrop-blur-sm bg-background/95">
 			<div className="max-w-7xl mx-auto px-6">
 				<div className="flex items-center justify-between h-20">
 					{/* Logo */}
@@ -316,27 +329,73 @@ const Navigation = () => {
 						</Link>
 					</div>
 
-					{/* Auth Buttons */}
+					{/* Auth Buttons - Show immediately, no loading state */}
 					<div className="hidden lg:flex items-center space-x-4">
-						{isAuthenticated ? (
-							<>
-								<Link to="/dashboard">
+						{isAuthenticated && user ? (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
 									<Button
-										variant="outline"
+										variant="ghost"
 										size="sm"
-										className="hover:scale-105 transition-transform">
-										<LayoutDashboard className="mr-2 h-4 w-4" />
-										Dashboard
+										className="relative h-10 w-10 rounded-full hover:scale-105 transition-transform">
+										<Avatar className="h-10 w-10">
+											<AvatarFallback className="bg-primary text-primary-foreground">
+												{user?.name
+													? user.name
+															.split(" ")
+															.map((n) => n[0])
+															.join("")
+															.toUpperCase()
+															.slice(0, 2)
+													: user?.firstName && user?.lastName
+													? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+													: user?.email
+													? user.email[0].toUpperCase()
+													: "U"}
+											</AvatarFallback>
+										</Avatar>
 									</Button>
-								</Link>
-								<Button
-									size="sm"
-									onClick={logout}
-									className="hover:scale-105 transition-transform">
-									<LogOut className="mr-2 h-4 w-4" />
-									Logout
-								</Button>
-							</>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end" className="w-56 z-[110]">
+									<DropdownMenuLabel>
+										<div className="flex flex-col space-y-1">
+											<p className="text-sm font-medium leading-none">
+												{user?.name || 
+												 (user?.firstName && user?.lastName 
+													? `${user.firstName} ${user.lastName}` 
+													: user?.firstName || "User")}
+											</p>
+											<p className="text-xs leading-none text-muted-foreground">
+												{user?.email || ""}
+											</p>
+										</div>
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild>
+										<Link
+											to="/dashboard"
+											className="flex items-center cursor-pointer">
+											<LayoutDashboard className="mr-2 h-4 w-4" />
+											Dashboard
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link
+											to="/dashboard/apps"
+											className="flex items-center cursor-pointer">
+											<Grid3x3 className="mr-2 h-4 w-4" />
+											My Apps
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										onClick={logout}
+										className="text-destructive focus:text-destructive cursor-pointer">
+										<LogOut className="mr-2 h-4 w-4" />
+										Logout
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						) : (
 							<>
 								<Link to="/auth/login">
@@ -438,14 +497,22 @@ const Navigation = () => {
 							</Link>
 
 							<div className="flex space-x-4 pt-4">
-								{isAuthenticated ? (
+								{isAuthenticated && user ? (
 									<>
 										<Link to="/dashboard">
 											<Button variant="outline" size="sm">
+												<LayoutDashboard className="mr-2 h-4 w-4" />
 												Dashboard
 											</Button>
 										</Link>
+										<Link to="/dashboard/apps">
+											<Button variant="outline" size="sm">
+												<Grid3x3 className="mr-2 h-4 w-4" />
+												My Apps
+											</Button>
+										</Link>
 										<Button size="sm" onClick={logout}>
+											<LogOut className="mr-2 h-4 w-4" />
 											Logout
 										</Button>
 									</>

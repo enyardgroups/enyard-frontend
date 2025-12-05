@@ -17,14 +17,21 @@ const VerifyEmail = () => {
 	const [hasToken, setHasToken] = useState(false);
 	const [emailFromState, setEmailFromState] = useState<string | null>(null);
 	const [fromRegistration, setFromRegistration] = useState(false);
+	const [verificationAttempted, setVerificationAttempted] = useState(false);
 	const location = useLocation();
 
 	useEffect(() => {
 		const token = searchParams.get("token");
 		
+		// Prevent re-verification if already verified or already attempted
+		if (isVerified || verificationAttempted) {
+			return;
+		}
+		
 		if (token) {
 			setHasToken(true);
-			setIsVerifying(true); // Set verifying state immediately
+			setIsVerifying(true);
+			setVerificationAttempted(true);
 			verifyEmail(token);
 		} else {
 			// No token - check if coming from registration
@@ -45,8 +52,11 @@ const VerifyEmail = () => {
 	const verifyEmail = async (token: string) => {
 		setIsVerifying(true);
 		try {
-			// The get function returns the data directly, not the full response
-			const data = await get(`/auth/verify-email?token=${token}`);
+			// The get function returns: { success: true, data: { token, userId, email, emailVerified } }
+			const response = await get(`/auth/verify-email?token=${token}`);
+			
+			// Extract data from response (response.data contains the actual data)
+			const data = response?.data || response;
 			
 			// Store token for phone verification step
 			if (data && data.token) {
@@ -54,6 +64,13 @@ const VerifyEmail = () => {
 			}
 			
 			setIsVerified(true);
+			setIsVerifying(false);
+			
+			// Remove token from URL to prevent re-verification
+			const newSearchParams = new URLSearchParams(searchParams);
+			newSearchParams.delete("token");
+			navigate({ search: newSearchParams.toString() }, { replace: true });
+			
 			toast({
 				title: "Email Verified",
 				description: "Your email has been verified successfully! Redirecting to phone verification...",
@@ -61,16 +78,38 @@ const VerifyEmail = () => {
 			
 			// Navigate to phone verification after a short delay
 			setTimeout(() => {
-				navigate("/auth/verify-phone");
+				navigate("/auth/verify-phone", { replace: true });
 			}, 2000);
 		} catch (error: any) {
 			setIsVerified(false);
 			setIsVerifying(false);
-			toast({
-				variant: "destructive",
-				title: "Verification Failed",
-				description: error.message || "Invalid or expired verification token",
-			});
+			// Only show error if it's not an "already verified" or "already used" case
+			if (error.message?.includes("already verified") || 
+			    error.message?.includes("Already verified") ||
+			    error.message?.includes("already used")) {
+				// Email already verified - proceed to phone verification
+				setIsVerified(true);
+				setIsVerifying(false);
+				
+				// Remove token from URL
+				const newSearchParams = new URLSearchParams(searchParams);
+				newSearchParams.delete("token");
+				navigate({ search: newSearchParams.toString() }, { replace: true });
+				
+				toast({
+					title: "Email Already Verified",
+					description: "Your email was already verified. Redirecting to phone verification...",
+				});
+				setTimeout(() => {
+					navigate("/auth/verify-phone", { replace: true });
+				}, 2000);
+			} else {
+				toast({
+					variant: "destructive",
+					title: "Verification Failed",
+					description: error.message || "Invalid or expired verification token",
+				});
+			}
 		}
 	};
 

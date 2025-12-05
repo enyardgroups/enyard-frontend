@@ -1,41 +1,19 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Terminal,
 	Bell,
-	Code,
-	User,
-	Mail,
-	Phone,
-	X,
-	Loader2,
 } from "lucide-react";
-import { notificationService } from "@/services";
-import { useToast } from "@/hooks/use-toast";
 
 const PenquinCountdown = () => {
+	const navigate = useNavigate();
 	const [timeLeft, setTimeLeft] = useState({
 		days: 0,
 		hours: 0,
 		minutes: 0,
 		seconds: 0,
 	});
-	const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [formData, setFormData] = useState({
-		name: "",
-		email: "",
-		mobile: "",
-	});
-	const [isLoading, setIsLoading] = useState(false);
-	const { toast } = useToast();
 
 	// Launch date: December 10, 2025 at 6:30 PM
 	const launchDate = new Date("2025-12-10T18:30:00").getTime();
@@ -60,38 +38,8 @@ const PenquinCountdown = () => {
 		return () => clearInterval(timer);
 	}, [launchDate]);
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		setFormData({
-			...formData,
-			[e.target.name]: e.target.value,
-		});
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsLoading(true);
-		try {
-			await notificationService.createNotification({
-				name: formData.name,
-				email: formData.email,
-				phone: formData.mobile,
-			});
-			toast({
-				title: "You're on the list!",
-				description: "We'll notify you when Penquin launches.",
-			});
-			setIsDialogOpen(false);
-			setFormData({ name: "", email: "", mobile: "" });
-		} catch (error: any) {
-			console.error("Failed to submit notification:", error);
-			toast({
-				title: "Submission Failed",
-				description: error.message || "An unexpected error occurred.",
-				variant: "destructive",
-			});
-		} finally {
-			setIsLoading(false);
-		}
+	const handleNotifyMe = () => {
+		navigate("/products/penquinx");
 	};
 
 	return (
@@ -175,115 +123,13 @@ const PenquinCountdown = () => {
 						<Button
 							size="sm"
 							className="bg-gray-800 hover:bg-gray-900 text-white text-sm px-4 py-2 font-mono border border-gray-600 hover:border-gray-700"
-							onClick={() => setIsDialogOpen(true)}>
+							onClick={handleNotifyMe}>
 							<Bell className="w-3 h-3 mr-2" />
 							<span className="font-mono">notify_me()</span>
 						</Button>
 					</div>
 				</div>
 			</div>
-
-			{/* Notification Dialog */}
-			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<DialogContent className="sm:max-w-md bg-gray-900 border-gray-700 text-white">
-					<DialogHeader>
-						<DialogTitle className="flex items-center space-x-2 text-lg font-mono">
-							<Terminal className="w-5 h-5 text-gray-400" />
-							<span>getNotification()</span>
-						</DialogTitle>
-					</DialogHeader>
-
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="space-y-3">
-							<div>
-								<Label
-									htmlFor="name"
-									className="text-gray-300 text-sm font-mono">
-									const name =
-								</Label>
-								<div className="relative">
-									<User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-									<Input
-										id="name"
-										name="name"
-										type="text"
-										required
-										className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500 font-mono text-sm"
-										placeholder="'your_name'"
-										value={formData.name}
-										onChange={handleInputChange}
-									/>
-								</div>
-							</div>
-
-							<div>
-								<Label
-									htmlFor="email"
-									className="text-gray-300 text-sm font-mono">
-									const email =
-								</Label>
-								<div className="relative">
-									<Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-									<Input
-										id="email"
-										name="email"
-										type="email"
-										required
-										className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500 font-mono text-sm"
-										placeholder="'your@email.com'"
-										value={formData.email}
-										onChange={handleInputChange}
-									/>
-								</div>
-							</div>
-
-							<div>
-								<Label
-									htmlFor="mobile"
-									className="text-gray-300 text-sm font-mono">
-									const mobile =
-								</Label>
-								<div className="relative">
-									<Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-									<Input
-										id="mobile"
-										name="mobile"
-										type="tel"
-										required
-										className="pl-10 bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-gray-500 font-mono text-sm"
-										placeholder="'+1234567890'"
-										value={formData.mobile}
-										onChange={handleInputChange}
-									/>
-								</div>
-							</div>
-						</div>
-
-						<div className="flex space-x-3 pt-2">
-							<Button
-								type="submit"
-								className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-sm font-mono"
-								disabled={isLoading}>
-								{isLoading ? (
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								) : (
-									<Code className="mr-2 h-4 w-4" />
-								)}
-								{isLoading ? "submitting..." : "submit()"}
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setIsDialogOpen(false)}
-								className="border-gray-500 text-gray-200 hover:bg-gray-700 hover:text-white text-sm font-mono bg-transparent"
-								disabled={isLoading}>
-								<X className="mr-2 h-4 w-4" />
-								cancel()
-							</Button>
-						</div>
-					</form>
-				</DialogContent>
-			</Dialog>
 		</section>
 	);
 };

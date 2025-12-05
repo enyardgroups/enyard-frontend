@@ -889,8 +889,7 @@ const Penquin = () => {
 										<select
 											value={formData.countryCode}
 											onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-											disabled={hasVerifiedPhone}
-											className="bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed">
+											className="bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 text-sm focus:border-cyan-500 focus:ring-cyan-500 focus:outline-none">
 											<option value="+1">🇺🇸 +1</option>
 											<option value="+44">🇬🇧 +44</option>
 											<option value="+61">🇦🇺 +61</option>
@@ -916,20 +915,13 @@ const Penquin = () => {
 												}
 											}}
 											maxLength={10}
-											disabled={hasVerifiedPhone}
-											className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-cyan-500 flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+											className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-cyan-500 flex-1"
 											placeholder="9876543210"
 										/>
 									</div>
-									{hasVerifiedPhone ? (
-										<p className="text-xs text-cyan-400 mt-1">
-											Using your verified phone number
-										</p>
-									) : (
-										<p className="text-xs text-gray-400 mt-1">
-											Enter 10-digit mobile number without country code
-										</p>
-									)}
+									<p className="text-xs text-gray-400 mt-1">
+										Enter 10-digit mobile number without country code
+									</p>
 								</div>
 								<div>
 									<Label
